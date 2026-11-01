@@ -8,14 +8,17 @@ import com.inventory.demo.enums.MovementReason;
 import com.inventory.demo.enums.MovementType;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Size;
 
 public class MovementDtos {
 
     public record CreateMovementRequest(
         @NotNull MovementType type,
-        @NotNull BigDecimal quantity,
+        @NotNull @DecimalMin(value = "0.0") BigDecimal quantity,
         @NotNull MovementReason reason,
-        @NotNull UUID ingredientId
+        @NotNull UUID ingredientId,
+        @Size(max = 500) String note
     ){}
 
     public record MovementResponse(
@@ -24,6 +27,7 @@ public class MovementDtos {
         BigDecimal quantity,
         LocalDateTime date,
         MovementReason reason,
-        UUID ingredientId
+        UUID ingredientId,
+        String note
     ){}
 }

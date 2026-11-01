@@ -10,7 +10,7 @@ import com.inventory.demo.enums.Unit;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name="ingredients")
+@Table(name="ingredients", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "category_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,5 +22,5 @@ public class Ingredient {
     @Column (nullable = false, precision = 10, scale = 2) private BigDecimal quantity;
     @Column (nullable = false, precision = 10, scale = 2) private BigDecimal minimumStock;
     @Enumerated(EnumType.STRING) @Column (nullable = false) private Unit unit;
-    @ManyToOne @JoinColumn (name = "category_id") private Category category;
+    @ManyToOne @JoinColumn (name = "category_id", nullable = false) private Category category;
 }

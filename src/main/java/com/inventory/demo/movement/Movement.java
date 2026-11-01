@@ -24,5 +24,6 @@ public class Movement {
     @Column (nullable = false, precision = 10, scale = 2) private BigDecimal quantity;
     @Column (nullable = false) private LocalDateTime date;
     @Enumerated(EnumType.STRING) @Column (nullable = false) private MovementReason reason;
+    @Column(length = 500) private String note;
     @ManyToOne @JoinColumn (name = "ingredient_id") private Ingredient ingredient;
 }

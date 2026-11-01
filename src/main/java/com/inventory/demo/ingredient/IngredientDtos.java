@@ -6,14 +6,15 @@ import java.util.UUID;
 import com.inventory.demo.enums.Unit;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
 public class IngredientDtos {
 
     public record CreateIngredientRequest(
         @NotBlank String name,
-        BigDecimal quantity,
-        BigDecimal minimumStock,
+        @NotNull @DecimalMin(value = "0.0") BigDecimal quantity,
+        @NotNull @DecimalMin(value = "0.0") BigDecimal minimumStock,
         @NotNull Unit unit,
         @NotNull UUID categoryId
     ){}

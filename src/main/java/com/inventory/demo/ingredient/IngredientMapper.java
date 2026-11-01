@@ -9,7 +9,7 @@ public class IngredientMapper {
 
     public static Ingredient toEntity(CreateIngredientRequest request, Category category){
         return Ingredient.builder()
-            .name(request.name())
+            .name(request.name().trim())
             .quantity(request.quantity())
             .minimumStock(request.minimumStock())
             .unit(request.unit())
@@ -20,7 +20,7 @@ public class IngredientMapper {
     public static void patch(PatchIngredientRequest request, Ingredient ingredient, Category category){
 
         if(request.name() != null){
-            ingredient.setName(request.name());
+            ingredient.setName(request.name().trim());
         }
 
         if(request.minimumStock() != null){

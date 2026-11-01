@@ -11,6 +11,7 @@ public class MovementMapper {
             .type(request.type())
             .quantity(request.quantity())
             .reason(request.reason())
+            .note(request.note())
             .ingredient(ingredient)
             .build();
     }
@@ -22,7 +23,8 @@ public class MovementMapper {
             movement.getQuantity(), 
             movement.getDate(), 
             movement.getReason(),
-            movement.getIngredient() != null ? movement.getIngredient().getId() : null
+            movement.getIngredient() != null ? movement.getIngredient().getId() : null,
+            movement.getNote()
         );
     }
 }

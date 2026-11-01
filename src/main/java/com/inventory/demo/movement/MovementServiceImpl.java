@@ -33,7 +33,11 @@ public class MovementServiceImpl implements MovementService{
         Ingredient ingredient = ingredientRepository.findById(request.ingredientId())
             .orElseThrow(() -> new ResourceNotFoundException("Ingredient Not Found"));
 
-        if (request.quantity().compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.quantity().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException("Quantity cannot be negative");
+        }
+
+        if (request.type() != MovementType.ADJUSTMENT && request.quantity().compareTo(BigDecimal.ZERO) == 0) {
             throw new BusinessException("Quantity has to be positive");
         }
 
