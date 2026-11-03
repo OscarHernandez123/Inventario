@@ -139,7 +139,6 @@ function App() {
             <button key={id} className={activeView === id ? 'nav-item active' : 'nav-item'} onClick={() => setActiveView(id)}>{label}</button>
           ))}
         </nav>
-        <div className="sidebar-tip">Registra cada compra, uso o pérdida para que el inventario sea confiable.</div>
       </aside>
 
       <main className="main-content">
