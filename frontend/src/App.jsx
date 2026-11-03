@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from './api'
+import EditIngredientModal from './EditIngredientModal'
 
 const emptyIngredient = { name: '', quantity: '', minimumStock: '', unit: 'KG', categoryId: '' }
 const emptyMovement = { ingredientId: '', type: 'OUT', quantity: '', reason: 'CONSUMPTION', note: '' }
@@ -101,8 +102,6 @@ function App() {
       categoryId: ingredient.categoryId,
     })
     setEditingId(ingredient.id)
-    setActiveView('ingredientes')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   async function submitMovement(event) {
@@ -145,11 +144,18 @@ function App() {
         {message && <div className={`toast ${message.type}`}>{message.text}</div>}
         {loading ? <div className="loading">Cargando inventario…</div> : <>
           {activeView === 'inicio' && <Dashboard ingredients={ingredients} lowStock={lowStock} categoryById={categoryById} onNavigate={setActiveView} />}
-          {activeView === 'ingredientes' && <IngredientsView {...{ ingredients, categories, categoryById, ingredientForm, setIngredientForm, editingId, setEditingId, submitIngredient, editIngredient, categoryForm, setCategoryForm, submitCategory }} />}
+          {activeView === 'ingredientes' && <IngredientsView {...{ ingredients, categories, categoryById, ingredientForm, setIngredientForm, submitIngredient, editIngredient, categoryForm, setCategoryForm, submitCategory }} />}
           {activeView === 'movimientos' && <MovementView ingredients={ingredients} movementForm={movementForm} setMovementForm={setMovementForm} submitMovement={submitMovement} />}
           {activeView === 'historial' && <HistoryView movements={movements} ingredients={ingredients} />}
         </>}
       </main>
+      {editingId && <EditIngredientModal
+        categories={categories}
+        ingredientForm={ingredientForm}
+        setIngredientForm={setIngredientForm}
+        onSubmit={submitIngredient}
+        onCancel={() => { setEditingId(null); setIngredientForm(emptyIngredient) }}
+      />}
     </div>
   )
 }
@@ -177,16 +183,15 @@ function Dashboard({ ingredients, lowStock, categoryById, onNavigate }) {
 }
 
 function IngredientsView(props) {
-  const { ingredients, categories, categoryById, ingredientForm, setIngredientForm, editingId, setEditingId, submitIngredient, editIngredient, categoryForm, setCategoryForm, submitCategory } = props
+  const { ingredients, categories, categoryById, ingredientForm, setIngredientForm, submitIngredient, editIngredient, categoryForm, setCategoryForm, submitCategory } = props
   return <>
     <header className="page-heading"><div><p className="eyebrow">Catálogo</p><h1>Ingredientes</h1><p>Define lo que compras y el mínimo que quieres conservar.</p></div></header>
     <div className="two-column">
-      <section className="panel form-panel"><h2>{editingId ? 'Editar ingrediente' : 'Nuevo ingrediente'}</h2><form onSubmit={submitIngredient}>
+      <section className="panel form-panel"><h2>Nuevo ingrediente</h2><form onSubmit={submitIngredient}>
         <Field label="Nombre"><input required value={ingredientForm.name} onChange={(e) => setIngredientForm({ ...ingredientForm, name: e.target.value })} placeholder="Ej. Harina de trigo" /></Field>
-        {!editingId && <div className="form-row"><Field label="Cantidad inicial"><input required min="0" step="0.01" type="number" value={ingredientForm.quantity} onChange={(e) => setIngredientForm({ ...ingredientForm, quantity: e.target.value })} /></Field><Field label="Stock mínimo"><input required min="0" step="0.01" type="number" value={ingredientForm.minimumStock} onChange={(e) => setIngredientForm({ ...ingredientForm, minimumStock: e.target.value })} /></Field></div>}
-        {editingId && <Field label="Stock mínimo"><input required min="0" step="0.01" type="number" value={ingredientForm.minimumStock} onChange={(e) => setIngredientForm({ ...ingredientForm, minimumStock: e.target.value })} /></Field>}
+        <div className="form-row"><Field label="Cantidad inicial"><input required min="0" step="0.01" type="number" value={ingredientForm.quantity} onChange={(e) => setIngredientForm({ ...ingredientForm, quantity: e.target.value })} /></Field><Field label="Stock mínimo"><input required min="0" step="0.01" type="number" value={ingredientForm.minimumStock} onChange={(e) => setIngredientForm({ ...ingredientForm, minimumStock: e.target.value })} /></Field></div>
         <div className="form-row"><Field label="Unidad"><select value={ingredientForm.unit} onChange={(e) => setIngredientForm({ ...ingredientForm, unit: e.target.value })}>{Object.entries(unitLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></Field><Field label="Categoría"><select required value={ingredientForm.categoryId} onChange={(e) => setIngredientForm({ ...ingredientForm, categoryId: e.target.value })}><option value="">Selecciona…</option>{categories.map((category) => <option value={category.id} key={category.id}>{category.name}</option>)}</select></Field></div>
-        <div className="form-actions"><button className="primary-button" type="submit">{editingId ? 'Guardar cambios' : 'Guardar ingrediente'}</button>{editingId && <button className="secondary-button" type="button" onClick={() => { setEditingId(null); setIngredientForm(emptyIngredient) }}>Cancelar</button>}</div>
+        <div className="form-actions"><button className="primary-button" type="submit">Guardar ingrediente</button></div>
       </form></section>
       <section className="panel form-panel"><h2>Nueva categoría</h2><p className="helper">Ejemplos: secos, lácteos, decoración o empaques.</p><form onSubmit={submitCategory}><Field label="Nombre"><input required value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} /></Field><Field label="Descripción"><input required value={categoryForm.description} onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })} /></Field><button className="secondary-button" type="submit">Crear categoría</button></form></section>
     </div>
