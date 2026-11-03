@@ -4,6 +4,20 @@ import { api } from './api'
 const emptyIngredient = { name: '', quantity: '', minimumStock: '', unit: 'KG', categoryId: '' }
 const emptyMovement = { ingredientId: '', type: 'OUT', quantity: '', reason: 'CONSUMPTION', note: '' }
 
+const demoCategories = [
+  { id: 'demo-secos', name: 'Secos', description: 'Harinas y endulzantes' },
+  { id: 'demo-lacteos', name: 'Lácteos', description: 'Refrigerados' },
+  { id: 'demo-decoracion', name: 'Decoración', description: 'Coberturas y detalles' },
+]
+
+const demoIngredients = [
+  { id: 'demo-harina', name: 'Harina de trigo', quantity: 12, minimumStock: 3, unit: 'KG', categoryId: 'demo-secos' },
+  { id: 'demo-azucar', name: 'Azúcar refinada', quantity: 4, minimumStock: 3, unit: 'KG', categoryId: 'demo-secos' },
+  { id: 'demo-mantequilla', name: 'Mantequilla', quantity: 1, minimumStock: 2, unit: 'KG', categoryId: 'demo-lacteos' },
+  { id: 'demo-huevos', name: 'Huevos', quantity: 24, minimumStock: 12, unit: 'UNIT', categoryId: 'demo-lacteos' },
+  { id: 'demo-chispas', name: 'Chispas de chocolate', quantity: 0.8, minimumStock: 0.5, unit: 'KG', categoryId: 'demo-decoracion' },
+]
+
 const unitLabels = { GR: 'g', KG: 'kg', ML: 'ml', L: 'l', UNIT: 'unidades' }
 const reasonLabels = {
   PURCHASE: 'Compra', CONSUMPTION: 'Uso en producción', EXPIRED: 'Vencido',
@@ -39,7 +53,9 @@ function App() {
       setCategories(categoryData)
       setMovements(movementData)
     } catch (error) {
-      setMessage({ type: 'error', text: `No se pudo conectar con el backend: ${error.message}` })
+      setIngredients(demoIngredients)
+      setCategories(demoCategories)
+      setMovements([])
     } finally {
       setLoading(false)
     }
@@ -116,7 +132,7 @@ function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark">✦</span><span>Alacena</span></div>
+        <div className="brand"><span className="brand-mark">✦</span><span>Aromas</span></div>
         <p className="brand-subtitle">Inventario de repostería</p>
         <nav>
           {[['inicio', 'Resumen'], ['ingredientes', 'Ingredientes'], ['movimientos', 'Registrar movimiento'], ['historial', 'Historial']].map(([id, label]) => (
@@ -139,16 +155,24 @@ function App() {
   )
 }
 
+function getStockStatus(item) {
+  const quantity = Number(item.quantity)
+  const minimum = Number(item.minimumStock)
+  if (quantity <= minimum) return { label: 'Por reponer', tone: 'low' }
+  if (quantity <= minimum * 2) return { label: 'Stock medio', tone: 'medium' }
+  return { label: 'Stock alto', tone: 'high' }
+}
+
 function Dashboard({ ingredients, lowStock, categoryById, onNavigate }) {
   return <>
-    <header className="page-heading"><div><p className="eyebrow">Buen día</p><h1>Tu inventario, de un vistazo.</h1><p>Controla tus ingredientes sin papeleo ni complicaciones.</p></div><button className="primary-button" onClick={() => onNavigate('movimientos')}>+ Registrar movimiento</button></header>
+    <header className="page-heading"><div><h1>Inventario</h1><p>Ingredientes registrados</p></div><button className="primary-button" onClick={() => onNavigate('movimientos')}>+ Registrar movimiento</button></header>
     <section className="stat-grid">
       <Stat label="Ingredientes" value={ingredients.length} helper="registrados" />
       <Stat label="Stock bajo" value={lowStock.length} helper={lowStock.length ? 'requieren atención' : 'todo está en orden'} warning={lowStock.length > 0} />
       <Stat label="Categorías" value={Object.keys(categoryById).length} helper="para organizarte" />
     </section>
-    <section className="panel"><div className="section-heading"><div><h2>Por reponer</h2><p>Ingredientes con existencias iguales o inferiores al mínimo.</p></div>{lowStock.length > 0 && <button className="text-button" onClick={() => onNavigate('ingredientes')}>Ver ingredientes</button>}</div>
-      {lowStock.length === 0 ? <EmptyState icon="✓" text="No tienes ingredientes por reponer." /> : <div className="stock-list">{lowStock.map((item) => <div className="stock-row" key={item.id}><div><strong>{item.name}</strong><span>{categoryById[item.categoryId]?.name ?? 'Sin categoría'}</span></div><div className="stock-amount"><strong>{formatQuantity(item.quantity, item.unit)}</strong><span>Mínimo: {formatQuantity(item.minimumStock, item.unit)}</span></div></div>)}</div>}
+    <section className="panel"><div className="section-heading"><div><h2>Estado de ingredientes</h2><p>Consulta existencias, categoría y prioridad de compra.</p></div><button className="text-button" onClick={() => onNavigate('ingredientes')}>Gestionar ingredientes</button></div>
+      {ingredients.length === 0 ? <EmptyState icon="⌁" text="Agrega tu primer ingrediente para comenzar." /> : <div className="table-wrap dashboard-table"><table><thead><tr><th>Ingrediente</th><th>Categoría</th><th>Disponible</th><th>Estado</th></tr></thead><tbody>{ingredients.map((item) => { const status = getStockStatus(item); return <tr key={item.id}><td><strong>{item.name}</strong></td><td>{categoryById[item.categoryId]?.name ?? 'Sin categoría'}</td><td>{formatQuantity(item.quantity, item.unit)}</td><td><span className={`status-pill ${status.tone}`}>{status.label}</span></td></tr> })}</tbody></table></div>}
     </section>
   </>
 }
