@@ -132,12 +132,12 @@ function App() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand"><span className="brand-mark">✦</span><span>Aromas</span></div>
-        <p className="brand-subtitle">Inventario de repostería</p>
         <nav>
           {[['inicio', 'Resumen'], ['ingredientes', 'Ingredientes'], ['movimientos', 'Registrar movimiento'], ['historial', 'Historial']].map(([id, label]) => (
             <button key={id} className={activeView === id ? 'nav-item active' : 'nav-item'} onClick={() => setActiveView(id)}>{label}</button>
           ))}
         </nav>
+        <div className="sidebar-logo"><img src="/aromas-logo.png" alt="Logo de Aromas" /></div>
       </aside>
 
       <main className="main-content">
