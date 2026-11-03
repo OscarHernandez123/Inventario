@@ -5,20 +5,6 @@ import EditIngredientModal from './EditIngredientModal'
 const emptyIngredient = { name: '', quantity: '', minimumStock: '', unit: 'KG', categoryId: '' }
 const emptyMovement = { ingredientId: '', type: 'OUT', quantity: '', reason: 'CONSUMPTION', note: '' }
 
-const demoCategories = [
-  { id: 'demo-secos', name: 'Secos', description: 'Harinas y endulzantes' },
-  { id: 'demo-lacteos', name: 'Lácteos', description: 'Refrigerados' },
-  { id: 'demo-decoracion', name: 'Decoración', description: 'Coberturas y detalles' },
-]
-
-const demoIngredients = [
-  { id: 'demo-harina', name: 'Harina de trigo', quantity: 12, minimumStock: 3, unit: 'KG', categoryId: 'demo-secos' },
-  { id: 'demo-azucar', name: 'Azúcar refinada', quantity: 4, minimumStock: 3, unit: 'KG', categoryId: 'demo-secos' },
-  { id: 'demo-mantequilla', name: 'Mantequilla', quantity: 1, minimumStock: 2, unit: 'KG', categoryId: 'demo-lacteos' },
-  { id: 'demo-huevos', name: 'Huevos', quantity: 24, minimumStock: 12, unit: 'UNIT', categoryId: 'demo-lacteos' },
-  { id: 'demo-chispas', name: 'Chispas de chocolate', quantity: 0.8, minimumStock: 0.5, unit: 'KG', categoryId: 'demo-decoracion' },
-]
-
 const unitLabels = { GR: 'g', KG: 'kg', ML: 'ml', L: 'l', UNIT: 'unidades' }
 const reasonLabels = {
   PURCHASE: 'Compra', CONSUMPTION: 'Uso en producción', EXPIRED: 'Vencido',
@@ -54,9 +40,10 @@ function App() {
       setCategories(categoryData)
       setMovements(movementData)
     } catch (error) {
-      setIngredients(demoIngredients)
-      setCategories(demoCategories)
+      setIngredients([])
+      setCategories([])
       setMovements([])
+      setMessage({ type: 'error', text: `No se pudo conectar con el backend: ${error.message}` })
     } finally {
       setLoading(false)
     }
