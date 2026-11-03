@@ -13,6 +13,83 @@
   }
 }
 
+.dashboard-filters {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.5fr) minmax(150px, 1fr) minmax(150px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.dashboard-filters label {
+  display: grid;
+  gap: 6px;
+  color: #39503d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dashboard-filters input,
+.dashboard-filters select {
+  width: 100%;
+  min-height: 39px;
+  border: 1px solid #cdd8c6;
+  border-radius: 7px;
+  padding: 8px 10px;
+  outline-color: #58753b;
+  background: #fcfdfb;
+  color: #203327;
+}
+
+.dashboard-filters input:focus,
+.dashboard-filters select:focus {
+  border-color: #58753b;
+  box-shadow: 0 0 0 3px #58753b20;
+}
+
+.clear-filters { min-height: 39px; white-space: nowrap; }
+
+.history-filters {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.5fr) minmax(150px, 1fr) minmax(150px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  padding: 0 26px 22px;
+}
+
+.history-filter-card {
+  padding: 22px 26px;
+  margin-bottom: 18px;
+}
+
+.history-filter-card .history-filters { padding: 0; }
+
+.history-filters label {
+  display: grid;
+  gap: 6px;
+  color: #39503d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.history-filters input,
+.history-filters select {
+  width: 100%;
+  min-height: 39px;
+  border: 1px solid #cdd8c6;
+  border-radius: 7px;
+  padding: 8px 10px;
+  outline-color: #58753b;
+  background: #fcfdfb;
+  color: #203327;
+}
+
+.history-filters input:focus,
+.history-filters select:focus {
+  border-color: #58753b;
+  box-shadow: 0 0 0 3px #58753b20;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -62,7 +139,29 @@
 .modal-close:hover { background: #dce7d2; }
 .modal-actions { display: flex; justify-content: end; gap: 10px; margin-top: 6px; }
 
+.movement-icon {
+  display: flex;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  text-align: center;
+}
+
+.movement-glyph {
+  display: block;
+  line-height: 1;
+  transform: translateY(-2px);
+}
+
 @media (max-width: 560px) {
+  .dashboard-filters { grid-template-columns: 1fr; align-items: stretch; }
+  .history-filters { grid-template-columns: 1fr; align-items: stretch; padding: 0 20px 20px; }
+  .clear-filters { justify-self: start; }
   .modal-backdrop { padding: 14px; }
   .modal-card { padding: 22px 18px; }
   .modal-actions { flex-direction: column-reverse; }

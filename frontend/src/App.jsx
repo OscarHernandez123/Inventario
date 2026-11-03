@@ -169,6 +169,15 @@ function getStockStatus(item) {
 }
 
 function Dashboard({ ingredients, lowStock, categoryById, onNavigate }) {
+  const [filters, setFilters] = useState({ name: '', categoryId: '', status: '' })
+  const categories = Object.values(categoryById)
+  const filteredIngredients = ingredients.filter((item) => {
+    const matchesName = item.name.toLocaleLowerCase().includes(filters.name.trim().toLocaleLowerCase())
+    const matchesCategory = !filters.categoryId || item.categoryId === filters.categoryId
+    const matchesStatus = !filters.status || getStockStatus(item).tone === filters.status
+    return matchesName && matchesCategory && matchesStatus
+  })
+
   return <>
     <header className="page-heading"><div><h1>Inventario</h1><p>Ingredientes registrados</p></div><button className="primary-button" onClick={() => onNavigate('movimientos')}>+ Registrar movimiento</button></header>
     <section className="stat-grid">
@@ -176,8 +185,9 @@ function Dashboard({ ingredients, lowStock, categoryById, onNavigate }) {
       <Stat label="Stock bajo" value={lowStock.length} helper={lowStock.length ? 'requieren atención' : 'todo está en orden'} warning={lowStock.length > 0} />
       <Stat label="Categorías" value={Object.keys(categoryById).length} helper="para organizarte" />
     </section>
-    <section className="panel"><div className="section-heading"><div><h2>Estado de ingredientes</h2><p>Consulta existencias, categoría y prioridad de compra.</p></div><button className="text-button" onClick={() => onNavigate('ingredientes')}>Gestionar ingredientes</button></div>
-      {ingredients.length === 0 ? <EmptyState icon="⌁" text="Agrega tu primer ingrediente para comenzar." /> : <div className="table-wrap dashboard-table"><table><thead><tr><th>Ingrediente</th><th>Categoría</th><th>Disponible</th><th>Estado</th></tr></thead><tbody>{ingredients.map((item) => { const status = getStockStatus(item); return <tr key={item.id}><td><strong>{item.name}</strong></td><td>{categoryById[item.categoryId]?.name ?? 'Sin categoría'}</td><td>{formatQuantity(item.quantity, item.unit)}</td><td><span className={`status-pill ${status.tone}`}>{status.label}</span></td></tr> })}</tbody></table></div>}
+    <section className="panel"><div className="section-heading"><div><h2>Estado de ingredientes</h2><p>Consulta existencias, categoría y prioridad de compra.</p></div></div>
+      {ingredients.length === 0 ? <EmptyState icon="⌁" text="Agrega tu primer ingrediente para comenzar." /> : <><div className="dashboard-filters"><label>Nombre<input value={filters.name} onChange={(event) => setFilters({ ...filters, name: event.target.value })} placeholder="Buscar ingrediente" /></label><label>Categoría<select value={filters.categoryId} onChange={(event) => setFilters({ ...filters, categoryId: event.target.value })}><option value="">Todas</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label><label>Estado<select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">Todos</option><option value="high">Stock alto</option><option value="medium">Stock medio</option><option value="low">Por reponer</option></select></label>{(filters.name || filters.categoryId || filters.status) && <button className="text-button clear-filters" type="button" onClick={() => setFilters({ name: '', categoryId: '', status: '' })}>Limpiar filtros</button>}</div>
+      {filteredIngredients.length === 0 ? <EmptyState icon="⌕" text="No hay ingredientes que coincidan con esos filtros." /> : <div className="table-wrap dashboard-table"><table><thead><tr><th>Ingrediente</th><th>Categoría</th><th>Disponible</th><th>Estado</th></tr></thead><tbody>{filteredIngredients.map((item) => { const status = getStockStatus(item); return <tr key={item.id}><td><strong>{item.name}</strong></td><td>{categoryById[item.categoryId]?.name ?? 'Sin categoría'}</td><td>{formatQuantity(item.quantity, item.unit)}</td><td><span className={`status-pill ${status.tone}`}>{status.label}</span></td></tr> })}</tbody></table></div>}</>}
     </section>
   </>
 }
@@ -204,8 +214,17 @@ function MovementView({ ingredients, movementForm, setMovementForm, submitMoveme
 }
 
 function HistoryView({ movements, ingredients }) {
+  const [filters, setFilters] = useState({ name: '', type: '', date: '' })
   const ingredientById = Object.fromEntries(ingredients.map((item) => [item.id, item]))
-  return <><header className="page-heading"><div><p className="eyebrow">Trazabilidad</p><h1>Historial</h1><p>Últimos cambios realizados en tu inventario.</p></div></header><section className="panel table-panel">{movements.length === 0 ? <EmptyState icon="⌁" text="Aún no has registrado movimientos." /> : <div className="history-list">{[...movements].sort((a, b) => new Date(b.date) - new Date(a.date)).map((movement) => <div className="history-row" key={movement.id}><div className={`movement-icon ${movement.type.toLowerCase()}`}>{movement.type === 'IN' ? '+' : movement.type === 'OUT' ? '−' : '↺'}</div><div className="history-main"><strong>{ingredientById[movement.ingredientId]?.name ?? 'Ingrediente eliminado'}</strong><span>{reasonLabels[movement.reason]}</span>{movement.note && <em>“{movement.note}”</em>}</div><div className="history-meta"><strong>{formatQuantity(movement.quantity, ingredientById[movement.ingredientId]?.unit)}</strong><span>{new Date(movement.date).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}</span></div></div>)}</div>}</section></>
+  const filteredMovements = movements.filter((movement) => {
+    const ingredientName = ingredientById[movement.ingredientId]?.name ?? ''
+    const matchesName = ingredientName.toLocaleLowerCase().includes(filters.name.trim().toLocaleLowerCase())
+    const matchesType = !filters.type || movement.type === filters.type
+    const matchesDate = !filters.date || movement.date?.slice(0, 10) === filters.date
+    return matchesName && matchesType && matchesDate
+  })
+
+  return <><header className="page-heading"><div><p className="eyebrow">Trazabilidad</p><h1>Historial</h1><p>Últimos cambios realizados en tu inventario.</p></div></header><section className="panel history-filter-card"><div className="history-filters"><label>Nombre<input value={filters.name} onChange={(event) => setFilters({ ...filters, name: event.target.value })} placeholder="Buscar ingrediente" /></label><label>Tipo<select value={filters.type} onChange={(event) => setFilters({ ...filters, type: event.target.value })}><option value="">Todos</option><option value="IN">Agregación</option><option value="OUT">Sustracción</option><option value="ADJUSTMENT">Ajuste</option></select></label><label>Fecha<input type="date" value={filters.date} onChange={(event) => setFilters({ ...filters, date: event.target.value })} /></label>{(filters.name || filters.type || filters.date) && <button className="text-button clear-filters" type="button" onClick={() => setFilters({ name: '', type: '', date: '' })}>Limpiar filtros</button>}</div></section><section className="panel table-panel history-list-card">{movements.length === 0 ? <EmptyState icon="⌁" text="Aún no has registrado movimientos." /> : filteredMovements.length === 0 ? <EmptyState icon="⌕" text="No hay movimientos que coincidan con esos filtros." /> : <div className="history-list">{[...filteredMovements].sort((a, b) => new Date(b.date) - new Date(a.date)).map((movement) => <div className="history-row" key={movement.id}><div className={`movement-icon ${movement.type.toLowerCase()}`}><span className="movement-glyph">{movement.type === 'IN' ? '+' : movement.type === 'OUT' ? '−' : '↺'}</span></div><div className="history-main"><strong>{ingredientById[movement.ingredientId]?.name ?? 'Ingrediente eliminado'}</strong><span>{reasonLabels[movement.reason]}</span>{movement.note && <em>“{movement.note}”</em>}</div><div className="history-meta"><strong>{formatQuantity(movement.quantity, ingredientById[movement.ingredientId]?.unit)}</strong><span>{new Date(movement.date).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}</span></div></div>)}</div>}</section></>
 }
 
 function IngredientTable({ ingredients, categoryById, onEdit }) { return ingredients.length === 0 ? <EmptyState icon="⌁" text="Agrega tu primer ingrediente para comenzar." /> : <div className="table-wrap"><table><thead><tr><th>Ingrediente</th><th>Categoría</th><th>Disponible</th><th>Mínimo</th><th></th></tr></thead><tbody>{ingredients.map((item) => <tr key={item.id} className={Number(item.quantity) <= Number(item.minimumStock) ? 'low-stock-row' : ''}><td><strong>{item.name}</strong></td><td>{categoryById[item.categoryId]?.name ?? '—'}</td><td>{formatQuantity(item.quantity, item.unit)}</td><td>{formatQuantity(item.minimumStock, item.unit)}</td><td><button className="text-button" onClick={() => onEdit(item)}>Editar</button></td></tr>)}</tbody></table></div> }
